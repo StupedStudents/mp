@@ -1,0 +1,11 @@
+romimage: file=$BXSHARE/BIOS-bochs-latest
+
+megs: 512
+
+vgaromimage: file= $BXSHARE/VGABIOS-lgpl-latest
+
+floppya: 1_44= "mbr.img" , status=inserted
+
+boot: floppy
+
+mouse: enabled=0

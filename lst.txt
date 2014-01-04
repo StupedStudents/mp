@@ -1,0 +1,317 @@
+      [bits 16]
+      global _VideoMode
+      global _VideoVesa
+      global _setPix
+      global _setChar
+      global _setPos
+      global _getKey
+      global _setPage
+      global _powOff
+      global _hardType
+      global _countDrives
+      global _outTime
+      global _setAlarm
+      section .text
+                                      
+                                      	_setAlarm:
+     00000000   6655                    		push ebp
+     00000002   89E5                    		mov bp,sp
+     00000004   31D2                    		xor dx,dx
+     00000006   B005                    		mov al,5h
+     00000008   E670                    		out 70h,al
+     0000000A   E82300                  		call _reader
+     0000000D   E671                    		out 71h,al
+     0000000F   B003                    		mov al,3h
+     00000011   E670                    		out 70h,al
+     00000013   E81A00                  		call _reader
+     00000016   E671                    		out 71h,al
+     00000018   B001                    		mov al,1h
+     0000001A   E670                    		out 70h,al
+     0000001C   E81100                  		call _reader
+     0000001F   E671                    		out 71h,al
+     00000021   E8B200                  		call _get_pos
+     00000024   FEC6                    		inc dh
+     00000026   B200                    		mov dl,0
+     00000028   E89B00                  		call _set_pos
+     0000002B   89EC                    		mov sp,bp
+     0000002D   665D                    		pop ebp
+                                      	
+     0000002F   C3                      	ret
+                                      
+                                       _reader:
+     00000030   E82000                  	call _rw
+     00000033   E8A000                  	call _get_pos
+     00000036   E89400                  	call _inc_pos
+     00000039   2C30                    	sub al,48
+     0000003B   B210                    	mov dl,16
+     0000003D   F6E2                    	mul dl
+     0000003F   88C2                    	mov dl,al
+     00000041   E80F00                  	call _rw
+     00000044   80EA30                  	sub dl,48
+     00000047   00D0                    	add al,dl
+     00000049   E88A00                  	call _get_pos
+     0000004C   E87E00                  	call _inc_pos
+     0000004F   E87B00                  	call _inc_pos
+     00000052   C3                      ret
+                                      
+                                     _rw:
+     00000053   B400                    	mov ah,0
+     00000055   CD16                    	int 16h
+     00000057   B409                    	mov ah,9
+     00000059   B304                    	mov bl,4h
+     0000005B   B701                    	mov bh,1
+     0000005D   B90100                  	mov cx,1
+     00000060   CD10                    	int 10h
+     00000062   C3                      ret
+                                      
+                                      	_outTime:
+     00000063   6655                    		push ebp
+     00000065   89E5                    		mov bp,sp
+     00000067   B304                    		mov bl,4
+     00000069   B009                    		mov al,09h
+     0000006B   E670                    		out 70h,al
+     0000006D   E471                    		in 	al,71h
+     0000006F   E86B00                  		call _print_num
+     00000072   B02E                    		mov al,'.'
+     00000074   E84400                  		call _setPoint
+     00000077   B008                    		mov al,08
+     00000079   E670                    		out 70h,al
+     0000007B   E471                    		in 	al,71h
+     0000007D   E85D00                  		call _print_num
+     00000080   B02E                    		mov al,'.'
+     00000082   E83600                  		call _setPoint
+     00000085   B007                    		mov al,07
+     00000087   E670                    		out 70h,al
+     00000089   E471                    		in 	al,71h
+     0000008B   E84F00                  		call _print_num
+     0000008E   E83C00                  		call _inc_pos
+     00000091   B004                    		mov al,04h
+     00000093   E670                    		out 70h,al
+     00000095   E471                    		in 	al,71h
+     00000097   E84300                  		call _print_num
+     0000009A   B03A                    		mov al,':'
+     0000009C   E81C00                  		call _setPoint
+     0000009F   B002                    		mov al,02h
+     000000A1   E670                    		out 70h,al
+     000000A3   E471                    		in 	al,71h
+     000000A5   E83500                  		call _print_num
+     000000A8   B03A                    		mov	al,':'
+     000000AA   E80E00                  		call _setPoint
+     000000AD   B000                    		mov al,00h
+     000000AF   E670                    		out 70h,al
+     000000B1   E471                    		in 	al,71h
+     000000B3   E82700                  		call _print_num
+                                       		
+     000000B6   89EC                    		mov sp,bp
+     000000B8   665D                    		pop ebp
+     000000BA   C3                      	ret
+                                      
+                                    
+                                      _setPoint:
+     000000BB   B409                    	mov ah,9
+     000000BD   B90100                  	mov cx,1
+     000000C0   CD10                    	int 10h
+     000000C2   E80800                  	call _inc_pos;
+     000000C5   C3                      ret
+                                      
+                                      _set_pos:
+     000000C6   B402                    	mov ah,2
+     000000C8   B700                    	mov bh,0
+     000000CA   CD10                    	int 10h
+     000000CC   C3                      ret
+                                      
+                                      _inc_pos:
+     000000CD   B402                    	mov ah,2
+     000000CF   FEC2                    	inc dl
+     000000D1   CD10                    	int 10h
+     000000D3   B409                    	mov ah,9
+     000000D5   C3                      ret
+                                      
+                                      _get_pos:
+     000000D6   B403                    	mov ah,3
+     000000D8   B701                    	mov bh,1
+     000000DA   CD10                    	int 10h
+     000000DC   C3                      ret
+                                      
+                                      _print_num:
+     000000DD   B400                    		mov ah,0
+     000000DF   6AFF                    		push -1
+     000000E1   B91000                  		mov cx,16
+                                      	point_l:
+     000000E4   31D2                    		xor dx,dx
+     000000E6   F7F1                    		div cx 
+     000000E8   52                      		push dx
+     000000E9   83F800                  		cmp ax,0
+     000000EC   75F6                    		jne point_l
+                                      	point_2:
+     000000EE   58                      		pop ax
+     000000EF   83F8FF                  		cmp ax,-1
+     000000F2   7411                    		je 	exit
+     000000F4   E8DFFF                  		call _get_pos
+     000000F7   B90100                  		mov cx,1
+     000000FA   B409                    		mov ah,9
+     000000FC   0430                    		add al,'0'
+     000000FE   CD10                    		int 10h
+     00000100   E8CAFF                  		call _inc_pos
+     00000103   EBE9                    		jmp	point_2
+                                      	exit:
+     00000105   C3                      ret
+                                      
+                                      
+                                      	_countDrives:
+     00000106   6655                    		push ebp
+     00000108   89E5                    		mov bp,sp
+     0000010A   B409                    		mov ah,9	
+     0000010C   B014                    		mov al, 14h
+     0000010E   E670                    		out 70h,al
+     00000110   E471                    		in al,71h
+     00000112   24C0                    		and al,11000000b
+     00000114   3C00                    		cmp al,0
+     00000116   740C                    		jz n_1
+     00000118   3C01                    		cmp al,1
+     0000011A   740D                    		jz n_2
+     0000011C   3C02                    		cmp al,2
+     0000011E   740E                    		jz n_3
+     00000120   3C03                    		cmp al,3
+     00000122   740F                    		jz n_4
+                                      	n_1:
+     00000124   B80100                  		mov ax,1
+     00000127   EB0F                    		jmp n_end
+                                      	n_2:
+     00000129   B80200                  		mov ax,2
+     0000012C   EB0A                    		jmp n_end
+                                      	n_3:
+     0000012E   B80300                  		mov ax,3
+     00000131   EB05                    		jmp n_end
+                                      	n_4:
+     00000133   B80400                  		mov ax,4
+     00000136   EB00                    		jmp n_end
+                                      	n_end:
+     00000138   89EC                    		mov sp,bp
+     0000013A   665D                    		pop ebp
+     0000013C   C3                      	ret
+                                      
+                                      	_hardType:
+                                      
+     0000013D   6655                    		push ebp
+     0000013F   89E5                    		mov bp,sp
+     00000141   B415                    		mov ah,15h
+     00000143   B280                    		mov dl,80h
+     00000145   CD13                    		int 13h
+     00000147   80FC00                  		cmp ah, 0
+     0000014A   7414                    		jz dev0
+     0000014C   80FC01                  		cmp ah, 1
+     0000014F   7414                    		jz dev1
+     00000151   80FC02                  		cmp ah,2
+     00000154   7414                    		jz dev2
+     00000156   80FC03                  		cmp ah,3
+     00000159   7414                    		jz dev3
+     0000015B   B80400                  		mov ax,4
+     0000015E   EB14                    		jmp next2
+                                      	dev0:
+     00000160   B80000                  		mov ax,0
+     00000163   EB0F                    		jmp next2
+                                      	dev1:
+     00000165   B80100                  		mov ax,1
+     00000168   EB0A                    		jmp next2
+                                      	dev2:
+     0000016A   B80200                  		mov ax,2
+     0000016D   EB05                    		jmp next2
+                                      	dev3:
+     0000016F   B80300                  		mov ax,3
+     00000172   EB00                    		jmp next2
+                                      	next2:
+                                      		
+     00000174   89EC                    		mov sp,bp
+     00000176   665D                    		pop ebp	
+     00000178   C3                      	ret
+                                      
+                                      	_powOff:
+     00000179   6655                    		push ebp
+     0000017B   89E5                    		mov bp,sp
+     0000017D   B80753                  		mov ax, 5307h
+     00000180   31DB                    		xor bx, bx
+     00000182   43                      		inc bx
+     00000183   B90300                  		mov cx, 3
+     00000186   CD15                    		int 15h
+     00000188   89EC                    		mov sp,bp
+     0000018A   665D                    		pop ebp
+     0000018C   C3                      	ret
+                                      
+                                      	_setPage:
+     0000018D   6655                    		push ebp
+     0000018F   89E5                    		mov bp,sp
+     00000191   B405                    		mov ah,5
+     00000193   8A4608                  		mov al,[bp + 8]
+     00000196   CD10                    		int 10h
+     00000198   89EC                    		mov sp,bp
+     0000019A   665D                    		pop ebp
+     0000019C   C3                      	ret
+                                      
+                                      	_getKey:
+     0000019D   6655                    		push ebp
+     0000019F   89E5                    		mov bp,sp
+     000001A1   B400                    		mov ah,0
+     000001A3   CD16                    		int 16h
+     000001A5   B400                    		mov ah,0
+     000001A7   89EC                    		mov sp,bp
+     000001A9   665D                    		pop ebp
+     000001AB   C3                      	ret
+                                      
+                                      	_setPos:
+     000001AC   6655                    		push ebp
+     000001AE   89E5                    		mov bp,sp
+     000001B0   31DB                    		xor bx,bx
+     000001B2   B402                    		mov ah,2
+     000001B4   8A7E08                  		mov bh,[bp + 8]
+     000001B7   8A760C                  		mov dh,[bp + 12]
+     000001BA   8A5610                  		mov dl,[bp + 16]
+     000001BD   CD10                    		int 10h
+     000001BF   89EC                    		mov sp,bp
+     000001C1   665D                    		pop	ebp
+     000001C3   C3                      	ret
+                                      
+                                      	_VideoMode:
+     000001C4   6655                    		push ebp
+     000001C6   89E5                    		mov bp, sp
+     000001C8   8B4608                  		mov ax, [bp+8]
+     000001CB   CD10                    		int 10h
+     000001CD   89EC                    		mov sp,bp
+     000001CF   665D                    		pop ebp
+     000001D1   C3                      	ret
+                                      
+                                      	_VideoVesa:
+     000001D2   6655                    		push ebp
+     000001D4   89E5                    		mov bp, sp
+     000001D6   B8024F                  		mov ax, 4f02h
+     000001D9   8B5E08                  		mov bx, [bp+8]
+     000001DC   CD10                    		int 10h
+     000001DE   89EC                    		mov sp,bp
+     000001E0   665D                    		pop ebp
+     000001E2   C3                      	ret
+                                      
+                                      	_setPix:
+     000001E3   6655                    		push ebp
+     000001E5   89E5                    		mov bp,sp
+     000001E7   B40C                    		mov ah,0ch
+     000001E9   8A4608                  		mov al,[bp + 8]
+     000001EC   8A7E0C                  		mov bh,[bp + 12]
+     000001EF   8B4E10                  		mov cx,[bp + 16]
+     000001F2   8B5614                  		mov dx,[bp + 20]
+     000001F5   CD10                    		int 10h
+     000001F7   89EC                    		mov sp,bp
+     000001F9   665D                    		pop ebp
+     000001FB   C3                      	ret
+                                      
+                                      	_setChar:
+     000001FC   6655                    		push ebp
+     000001FE   89E5                    		mov bp,sp
+     00000200   B409                    		mov ah,9
+     00000202   8A4608                  		mov al,[bp + 8]
+     00000205   8B4E0C                  		mov cx,[bp + 12]
+     00000208   8A5E10                  		mov bl,[bp + 16]
+     0000020B   8A7E14                  		mov bh,[bp + 20]
+     0000020E   CD10                    		int 10h
+     00000210   89EC                    		mov sp,bp
+     00000212   665D                    		pop ebp
+     00000214   C3                      	ret
